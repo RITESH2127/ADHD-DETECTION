@@ -170,77 +170,126 @@ This matters because EEG windows from the same participant are correlated. Rando
 
 The implemented subject-specific z-score procedure uses statistics derived from that participant's recording. This is a retrospective normalization choice, not necessarily a causal online procedure. A prospective or real-time system would need a separately specified normalization strategy that uses only information available at the time of prediction.
 
-## 🧠 How the model works
+## 🧠 Model architecture
 
-The principal model has two parallel input branches and a late-fusion classifier.
+The main experiment is a **two-input, dual-branch network with late feature fusion**. Both inputs are derived from the same cleaned 2-second EEG window, but they describe it in different ways:
 
-\`\`\`mermaid
-flowchart LR
-    A["EEG window<br/>256 × 19"] --> B["GPU STFT<br/>128 frame · 8 step · 128 FFT"]
-    B --> C["Log magnitude<br/>41 frequency bins"]
-    C --> D["CNN feature extractor"]
-    D --> E["Patch projection<br/>40 tokens × 64"]
-    E --> F["Positional embedding"]
-    F --> G["3 Transformer encoder blocks"]
-    G --> H["Global average pooling<br/>64 features"]
+- The **spectral branch** receives the raw multichannel EEG window and learns time–frequency patterns with a CNN followed by a Vision Transformer.
+- The **connectivity branch** receives the 171 pairwise Pearson-correlation values and learns a compact representation of relationships between EEG channels.
+- The **fusion head** joins the two learned feature vectors and produces the two-class output.
 
-    A --> I["Pearson channel correlations"]
-    I --> J["Upper triangle<br/>171 features"]
-    J --> K["Dense connectivity encoder<br/>32 features"]
+The diagram below follows the tensor flow implemented in `build_paper_hybrid_model()` in [the main notebook](sensitivitytestadhdcode.ipynb). Tensor dimensions are shown as `[batch, ...]`; the batch dimension is variable.
 
-    H --> L["Concatenate<br/>96 features"]
-    K --> L
-    L --> M["Dense + GELU + Dropout"]
-    M --> N["Softmax"]
-    N --> O["Control / ADHD"]
-\`\`\`
+### End-to-end architecture
 
-### Branch A — spectral CNN–ViT
+```mermaid
+flowchart TB
+    EEG["Clean EEG window<br/>256 samples × 19 channels"] 
 
-1. **GPU STFT:** computes the short-time Fourier transform inside the TensorFlow model graph.
-2. **Frequency selection:** retains 41 bins spanning 0–40 Hz and applies logarithmic magnitude compression.
-3. **CNN blocks:** factorized temporal/spatial convolution followed by additional convolutional blocks. Pooling compresses frequency resolution while preserving the temporal-frame dimension.
-4. **Patch projection:** projects the final feature map into a 5 × 8 grid — 40 tokens of dimension 64 in the documented configuration.
-5. **Positional encoding:** adds learned positional embeddings to the token sequence.
-6. **Transformer encoder:** applies three pre-normalized encoder blocks with four attention heads, residual connections, LayerScale and GELU feed-forward layers.
-7. **Pooling:** global average pooling produces the spectral feature vector.
+    EEG --> RAW["Raw EEG input<br/>[B, 256, 19]"]
+    EEG --> CORR["Pairwise Pearson correlations<br/>19 × 19 correlation matrix"]
 
-### Branch B — functional connectivity
+    subgraph SPECTRAL["BRANCH 1 — SPECTRAL CNN + VISION TRANSFORMER"]
+        direction TB
+        RAW --> STFT["GPU STFT + log-magnitude<br/>[B, 41, 17, 19]"]
+        STFT --> BN0["Batch normalization"]
+        BN0 --> CNN1["CNN stage 1<br/>factorized convolutions · 16 filters<br/>pooling → [B, 20, 8, 16]"]
+        CNN1 --> CNN2["CNN stage 2<br/>3 × 3 convolution · 32 filters<br/>frequency pooling → [B, 10, 8, 32]"]
+        CNN2 --> CNN3["CNN stage 3<br/>3 × 3 convolution · 64 filters<br/>frequency pooling → [B, 5, 8, 64]"]
+        CNN3 --> PROJ["Patch projection<br/>5 × 8 feature grid"]
+        PROJ --> TOKENS["Reshape to 40 tokens<br/>[B, 40, 64]"]
+        TOKENS --> POS["Learned positional embedding"]
+        POS --> VIT["3 Transformer encoder blocks<br/>4-head self-attention<br/>residual connections + LayerScale<br/>LayerNorm + GELU feed-forward network"]
+        VIT --> POOL["Global average pooling<br/>Layer normalization"]
+        POOL --> VF["Spectral feature vector<br/>[B, 64]"]
+    end
 
-For each clean EEG window, the pipeline computes the Pearson correlation between every pair of the 19 channels. The upper triangle excludes the diagonal and duplicate symmetric entries:
+    subgraph CONNECTIVITY["BRANCH 2 — FUNCTIONAL CONNECTIVITY"]
+        direction TB
+        CORR --> UPPER["Extract upper triangle<br/>19 × 18 / 2 = 171 features"]
+        UPPER --> CIN["Connectivity input<br/>[B, 171]"]
+        CIN --> CDENSE["Dense(32) + ReLU"]
+        CDENSE --> CBN["Batch normalization"]
+        CBN --> CDROP["Dropout(0.3)"]
+        CDROP --> CF["Connectivity feature vector<br/>[B, 32]"]
+    end
 
-**19 × 18 / 2 = 171 unique pairwise features.**
+    subgraph CLASSIFIER["LATE FUSION + CLASSIFICATION"]
+        direction TB
+        VF --> CONCAT["Concatenate feature vectors<br/>64 + 32 = 96 features"]
+        CF --> CONCAT
+        CONCAT --> FCDENSE["Dense(32) + GELU"]
+        FCDENSE --> FDROP["Dropout(0.5)"]
+        FDROP --> OUT["Dense(2) + Softmax"]
+        OUT --> PRED["Class probabilities<br/>Control · ADHD"]
+    end
 
-A dense encoder maps the 171-dimensional vector to a 32-dimensional learned representation. The connectivity features are computed from the original clean window; they are not intended to be inferred from an artifact-mixed waveform.
+    classDef input fill:#e8f1ff,stroke:#356ac3,color:#142b4d,stroke-width:1.5px;
+    classDef spectral fill:#e8f7f1,stroke:#25845d,color:#123b2b;
+    classDef connectivity fill:#fff3df,stroke:#c17b19,color:#59390b;
+    classDef fusion fill:#f1eaff,stroke:#8054bd,color:#35204f;
+    class RAW,CORR,EEG input;
+    class STFT,BN0,CNN1,CNN2,CNN3,PROJ,TOKENS,POS,VIT,POOL,VF spectral;
+    class UPPER,CIN,CDENSE,CBN,CDROP,CF connectivity;
+    class CONCAT,FCDENSE,FDROP,OUT,PRED fusion;
+```
 
-### Fusion head
+### 1. Input preparation
 
-The 64-dimensional pooled spectral representation and 32-dimensional connectivity representation are concatenated into a 96-dimensional vector. A dense layer, GELU activation, dropout and two-class softmax produce the model output.
+The main model receives **two inputs**, not one:
 
-### Main notebook configuration
+| Model input | Shape per example | How it is produced |
+|---|---:|---|
+| Raw EEG | `(256, 19)` | A cleaned 2-second window from 19 EEG channels at 128 Hz |
+| Connectivity vector | `(171,)` | Upper-triangle Pearson correlations from the same window's 19 × 19 channel-correlation matrix |
 
-| Parameter | Value |
-|---|---:|
-| Input window | 256 × 19 |
-| Connectivity vector | 171 |
-| STFT frame length | 128 |
-| STFT frame step | 8 |
-| FFT length | 128 |
-| Retained frequency bins | 41 |
-| ViT embedding dimension | 64 |
-| ViT blocks | 3 |
-| Attention heads | 4 |
-| Batch size | 64 |
-| Epoch budget | 20 |
-| Optimizer | AdamW |
-| Learning rate | 1e-4 |
-| Weight decay | 1e-2 |
-| Gradient clip norm | 1.0 |
-| Focal-loss gamma | 2.0 |
-| Random seed | 42 |
-| Mixup | Disabled in the main notebook configuration |
+The correlation matrix is symmetric. Removing its diagonal and duplicate lower-triangle entries leaves **171 unique channel pairs**. This vector is prepared as a separate model input; it is not generated by the CNN–ViT branch.
 
-The experiment notebook is the source of truth for the configuration used by that notebook. Some supporting notes preserve earlier settings; see [reproducibility notes](#-reproducibility-and-version-notes).
+### 2. Branch 1 — spectral CNN–ViT
+
+1. **STFT transformation:** the custom TensorFlow layer computes the short-time Fourier transform inside the model. The configured frame length, step and FFT length are 128, 8 and 128. The log-magnitude representation has shape `[B, 41, 17, 19]`.
+2. **CNN feature extraction:** three convolutional stages learn local patterns. The first uses factorized temporal/spatial convolutions; the following stages use 3 × 3 convolutions. Pooling reduces the frequency dimension while retaining the eight-frame temporal dimension.
+3. **Feature grid:** the final convolutional map is `[B, 5, 8, 64]`. A projection convolution retains the 5 × 8 grid, which is reshaped into **40 tokens, each with 64 features**.
+4. **Position information:** learned positional embeddings are added to the token sequence so the Transformer can distinguish token positions.
+5. **Transformer encoding:** three encoder blocks use four-head self-attention, LayerNorm, residual connections, LayerScale and a GELU feed-forward subnetwork.
+6. **Branch output:** global average pooling over the token sequence, followed by LayerNorm, produces a **64-dimensional spectral feature vector**.
+
+### 3. Branch 2 — functional connectivity
+
+1. Compute the Pearson correlation matrix across the 19 channels for the same cleaned EEG window.
+2. Extract the 171 unique off-diagonal channel-pair values.
+3. Pass the vector through a 32-unit ReLU dense layer, batch normalization and dropout of 0.3.
+4. The branch produces a **32-dimensional connectivity feature vector**.
+
+This branch represents statistical relationships between channels. Correlation alone does not establish a causal interaction or a clinically meaningful biomarker.
+
+### 4. Late fusion and prediction
+
+The two branch outputs are joined **after** their independent feature extraction:
+
+`64 spectral features + 32 connectivity features = 96 fused features`
+
+The fused vector passes through a 32-unit dense layer with GELU activation, dropout of 0.5, and a final two-unit softmax layer. The output contains the model's class probabilities for **Control** and **ADHD**.
+
+### 5. Training objective (not an extra architecture branch)
+
+The main notebook trains the network with categorical focal loss (configured with `gamma = 2.0`) and the AdamW optimizer. These are training choices; they are not layers in the forward-pass architecture shown above.
+
+### Architecture summary
+
+| Component | Implemented configuration | Output |
+|---|---|---:|
+| Raw EEG input | 256 samples × 19 channels | 256 × 19 |
+| STFT representation | Frame 128 · step 8 · FFT 128 | 41 × 17 × 19 |
+| CNN feature map | Three convolutional stages | 5 × 8 × 64 |
+| Token sequence | 5 × 8 positions, embedding size 64 | 40 × 64 |
+| Transformer | 3 blocks · 4 attention heads | 40 × 64 |
+| Spectral branch pooling | Global average pooling + LayerNorm | 64 |
+| Connectivity input | 171 unique Pearson correlations | 171 |
+| Connectivity encoder | Dense(32) + BN + Dropout(0.3) | 32 |
+| Fusion | Concatenation | 96 |
+| Classifier head | Dense(32, GELU) + Dropout(0.5) | 32 |
+| Output | Dense(2) + Softmax | 2 class probabilities |
 
 ## 🔍 Evaluation methodology
 
