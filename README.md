@@ -21,7 +21,7 @@
 <p align="center">
   <a href="#-the-project">Project</a> ·
   <a href="#-results-at-a-glance">Results</a> ·
-  <a href="#-how-the-model-works">Architecture</a> ·
+  <a href="#-model-architecture">Architecture</a> ·
   <a href="#-visual-research-gallery">Gallery</a> ·
   <a href="#-reproduce-the-experiments">Reproduce</a> ·
   <a href="#-limitations--research-integrity">Limitations</a> ·
@@ -193,7 +193,7 @@ flowchart TB
         direction TB
         RAW --> STFT["TensorFlow STFT + log-magnitude<br/>[B, 41, 17, 19]"]
         STFT --> BN0["Batch normalization"]
-        BN0 --> CNN1["CNN stage 1<br/>factorized convolutions · 16 filters<br/>pooling → [B, 20, 8, 16]"]
+        BN0 --> CNN1["CNN stage 1<br/>(1 × 7) time + (7 × 1) frequency convs<br/>16 filters<br/>pooling → [B, 20, 8, 16]"]
         CNN1 --> CNN2["CNN stage 2<br/>3 × 3 convolution · 32 filters<br/>frequency pooling → [B, 10, 8, 32]"]
         CNN2 --> CNN3["CNN stage 3<br/>3 × 3 convolution · 64 filters<br/>frequency pooling → [B, 5, 8, 64]"]
         CNN3 --> PROJ["Patch projection<br/>5 × 8 feature grid"]
@@ -247,8 +247,8 @@ The correlation matrix is symmetric. Removing its diagonal and duplicate lower-t
 
 ### 2. Branch 1 — spectral CNN–ViT
 
-1. **STFT transformation:** the custom TensorFlow layer computes the short-time Fourier transform inside the model. The configured frame length, step and FFT length are 128, 8 and 128. The log-magnitude representation has shape `[B, 41, 17, 19]`.
-2. **CNN feature extraction:** three convolutional stages learn local patterns. The first uses factorized temporal/spatial convolutions; the following stages use 3 × 3 convolutions. Pooling reduces the frequency dimension while retaining the eight-frame temporal dimension.
+1. **STFT transformation:** the custom TensorFlow layer computes the short-time Fourier transform inside the model. The configured frame length, step and FFT length are 128, 8 and 128. The log-magnitude representation has shape `[B, 41, 17, 19]`. TensorFlow decides whether these operations run on CPU or GPU based on the installed build and runtime; the layer name does not guarantee GPU execution.
+2. **CNN feature extraction:** three convolutional stages learn local time–frequency patterns. In the first stage, a `(1, 7)` convolution operates across STFT frames, followed by a `(7, 1)` convolution across frequency bins. The next two stages use 3 × 3 convolutions. Pooling reduces the frequency dimension while retaining the eight-frame temporal dimension. The 19 EEG channels form the convolution input-depth dimension; the network does not apply 2D convolutions over a scalp-topography layout.
 3. **Feature grid:** the final convolutional map is `[B, 5, 8, 64]`. A projection convolution retains the 5 × 8 grid, which is reshaped into **40 tokens, each with 64 features**.
 4. **Position information:** learned positional embeddings are added to the token sequence so the Transformer can distinguish token positions.
 5. **Transformer encoding:** three pre-normalized encoder blocks use four-head self-attention (`key_dim=32`), LayerNorm, residual connections, LayerScale (initial scale `1e-2`) and a GELU feed-forward network (`64 → 128 → 64`). The configured Transformer dropout is `0.4`.
@@ -281,7 +281,7 @@ The main notebook trains the network with categorical focal loss (configured wit
 |---|---|---:|
 | Raw EEG input | 256 samples × 19 channels | 256 × 19 |
 | STFT representation | Frame 128 · step 8 · FFT 128 | 41 × 17 × 19 |
-| CNN feature map | Three convolutional stages | 5 × 8 × 64 |
+| CNN feature map | Three time–frequency convolutional stages | 5 × 8 × 64 |
 | Token sequence | 5 × 8 positions, embedding size 64 | 40 × 64 |
 | Transformer | 3 pre-norm blocks · 4 heads · dropout 0.4 · FFN 64→128→64 | 40 × 64 |
 | Spectral branch pooling | Global average pooling + LayerNorm | 64 |
