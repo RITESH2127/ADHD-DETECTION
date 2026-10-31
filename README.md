@@ -174,11 +174,11 @@ The implemented subject-specific z-score procedure uses statistics derived from 
 ## 🧠 Model architecture
 
 <p align="center">
-  <img src="assets/architecture-live.svg" alt="Animated model architecture: EEG input branches into spectral STFT CNN Vision Transformer and Pearson functional connectivity, then late fusion and Control or ADHD output" width="100%"/>
+  <img src="assets/architecture-live.svg" alt="Detailed animated architecture: EEG cleaning and windowing feed STFT, three CNN stages, 40-token Vision Transformer and 64-D pooling in the spectral branch; Pearson 19-by-19 connectivity becomes 171 features and a 32-D vector; both fuse into a 96-D representation and a two-class softmax head, with training and participant-split context." width="100%"/>
 </p>
 
 <p align="center">
-  <b>Follow the moving signal:</b> animated flow traces show how one EEG window travels through both feature branches and converges at the classifier.
+  <b>Follow the moving signal:</b> animated flow traces show the complete forward pass, with tensor shapes at each stage. The lower panels separately explain the training recipe and participant-aware evaluation so they are not mistaken for extra network layers.
 </p>
 
 > The diagram is embedded directly in this README as an animated SVG image. It does not require GitHub Pages, JavaScript, a separate website, or an external viewer. If your Markdown viewer does not animate SVG, open <a href="assets/architecture-live.svg">the SVG diagram directly</a>.
