@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>ADHD EEG–ViT | Interactive Model Architecture</title>
+<meta name="description" content="Interactive architecture explorer for the EEG spectral CNN–Vision Transformer and Pearson functional-connectivity fusion model.">
+<style>
+:root{color-scheme:dark;--bg:#08111f;--panel:#101d30;--panel2:#14243a;--line:#29405b;--text:#edf4ff;--muted:#a9bad0;--cyan:#5bd7e8;--mint:#70dfb0;--amber:#f5bd68;--violet:#b89aff;--pink:#ff91ae}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 18% 0%,#17304b 0,transparent 42%),var(--bg);color:var(--text);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--cyan)}.wrap{max-width:1240px;margin:auto;padding:34px 24px 54px}.eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.hero{display:flex;gap:24px;justify-content:space-between;align-items:flex-end;margin-bottom:24px}.hero h1{font-size:clamp(30px,5vw,52px);line-height:1.05;letter-spacing:-.04em;margin:10px 0}.hero p{max-width:760px;color:var(--muted);margin:0}.tag{border:1px solid #31506c;border-radius:999px;padding:8px 12px;color:#c5d8ec;font-size:12px;white-space:nowrap}
+.notice{border:1px solid #6a5431;background:#2b2418;color:#f8d9a5;padding:12px 15px;border-radius:12px;margin:22px 0 24px;font-size:13px}
+.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:16px}.btn{appearance:none;border:1px solid #38536e;background:#14263b;color:var(--text);border-radius:10px;padding:10px 15px;font:inherit;font-weight:700;cursor:pointer;min-height:42px}.btn.primary{background:#b6f0f4;color:#06202a;border-color:#b6f0f4}.btn:disabled{opacity:.4;cursor:not-allowed}.btn:focus-visible,.step:focus-visible,.node:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.progress{height:5px;background:#1b2d42;border-radius:99px;overflow:hidden;margin:0 0 18px}.progress span{display:block;height:100%;width:12.5%;background:linear-gradient(90deg,var(--cyan),var(--mint));transition:width .35s ease}
+.steps{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px;margin-bottom:18px}.step{min-width:0;text-align:left;border:1px solid #2b4059;background:#0e1a2a;color:var(--muted);border-radius:10px;padding:9px 8px;cursor:pointer;font-size:11px;line-height:1.3}.step b{display:block;color:inherit;font-size:12px;margin-bottom:4px}.step[aria-current=step]{border-color:var(--cyan);background:#153044;color:#e9fcff;box-shadow:inset 0 0 0 1px #5bd7e855}
+.diagram{border:1px solid #263d57;border-radius:20px;background:linear-gradient(145deg,#0d1929,#0b1625);padding:20px;overflow:hidden}
+.diagram-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:16px}.diagram-head h2{font-size:16px;margin:0}.legend{display:flex;flex-wrap:wrap;gap:12px;color:var(--muted);font-size:11px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.flow{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}.source{grid-column:1/-1;max-width:520px;width:100%;margin:0 auto 2px;border:1px solid #45627e;background:#142940;border-radius:14px;padding:13px 16px;text-align:center;position:relative}.source:after{content:"";position:absolute;top:100%;left:50%;height:19px;border-left:2px solid #52718d}.source strong{display:block;font-size:15px}.source small{color:var(--muted)}
+.branch{border:1px solid #2b4c5c;background:#0f202e;border-radius:15px;padding:15px;position:relative;transition:border-color .25s,background .25s}.branch.conn{border-color:#5c4a2d;background:#211e19}.branch h3{font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 12px;color:var(--mint)}.branch.conn h3{color:var(--amber)}
+.node{display:block;width:100%;text-align:left;border:1px solid #31566a;background:#122c3a;color:var(--text);border-radius:10px;padding:10px 12px;margin:8px 0;cursor:pointer;transition:transform .2s,border-color .2s,background .2s;position:relative}.conn .node{border-color:#66502f;background:#2a251d}.node strong{display:block;font-size:13px}.node small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.node.active{border-color:var(--cyan);background:#174054;transform:translateY(-1px);box-shadow:0 0 0 1px #5bd7e844}.conn .node.active{border-color:var(--amber);background:#44351f;box-shadow:0 0 0 1px #f5bd6844}
+.down{text-align:center;color:#64819a;font-size:17px;line-height:15px}.fusion{grid-column:1/-1;max-width:650px;width:100%;margin:0 auto;border:1px solid #56447d;background:#201a32;border-radius:15px;padding:14px;text-align:center;position:relative}.fusion:before{content:"";position:absolute;bottom:100%;left:50%;height:18px;border-left:2px solid #7c65a9}.fusion strong{color:#d8c5ff}.fusion small{display:block;color:#c3b5db}
+.pred{grid-column:1/-1;max-width:360px;width:100%;margin:0 auto;border:1px solid #6a3f56;background:#2b1c2a;border-radius:14px;text-align:center;padding:13px}.pred strong{color:#ffb3c9}.pred small{display:block;color:#d5b6c5}
+.details{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(250px,.8fr);gap:14px;margin-top:16px}.detail-card,.tensor-card{border:1px solid #293e57;background:#101d30;border-radius:15px;padding:17px}.detail-card h3{margin:0 0 8px;font-size:18px}.detail-card p{color:var(--muted);margin:0}.tensor-card .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}.tensor{font:700 22px ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--cyan);margin:8px 0}.tensor-card p{font-size:12px;color:var(--muted);margin:0}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}.metric{border:1px solid #283c54;background:#0e1a2a;border-radius:12px;padding:12px}.metric b{display:block;font-size:18px}.metric small{color:var(--muted);font-size:11px}
+.foot{color:#8fa4bb;font-size:12px;margin:18px 2px 0}.foot a{color:#8edce8}
+.pulse{animation:pulse 1.5s ease-in-out infinite}@keyframes pulse{50%{box-shadow:0 0 0 4px #5bd7e822,0 0 22px #5bd7e833}}
+@media(max-width:760px){.wrap{padding:24px 14px 38px}.hero{display:block}.tag{display:inline-block;margin-top:15px}.steps{grid-template-columns:repeat(4,minmax(0,1fr))}.details{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}.diagram{padding:13px}.diagram-head{align-items:flex-start;flex-direction:column}}
+@media(max-width:480px){.flow{grid-template-columns:1fr}.source,.fusion,.pred{grid-column:1}.branch{min-width:0}.source:after{height:18px}.fusion:before{height:18px}.legend{gap:8px}.step{font-size:10px;padding:8px 6px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap" id="architecture-app">
+<header class="hero">
+<div><div class="eyebrow">Research model · interactive architecture</div><h1>From EEG signal to<br><span style="color:var(--cyan)">two-branch intelligence.</span></h1><p>Explore how one preprocessed EEG window becomes two complementary representations—spectral-temporal features and functional connectivity—before they are fused for Control vs ADHD classification.</p></div>
+<div class="tag">MAIN EEG-ONLY EXPERIMENT · 19 CHANNELS</div>
+</header>
+<div class="notice"><strong>Research prototype, not a diagnostic tool.</strong> The visualization describes the implemented model architecture. It does not establish clinical validity or suitability for individual diagnosis.</div>
+<div class="toolbar"><button class="btn primary" id="play" type="button">▶ Run walkthrough</button><button class="btn" id="prev" type="button">← Previous</button><button class="btn" id="next" type="button">Next stage →</button><span id="status" aria-live="polite" style="color:var(--muted);font-size:12px">Stage 1 of 8 · Input</span></div>
+<div class="progress" aria-hidden="true"><span id="bar"></span></div>
+<nav class="steps" aria-label="Architecture stages" id="steps">
+<button class="step" data-step="0" aria-current="step"><b>01 · Input</b>EEG window</button>
+<button class="step" data-step="1"><b>02 · STFT</b>Spectral map</button>
+<button class="step" data-step="2"><b>03 · CNN</b>Feature maps</button>
+<button class="step" data-step="3"><b>04 · ViT</b>Tokens + attention</button>
+<button class="step" data-step="4"><b>05 · Connectivity</b>Pearson pairs</button>
+<button class="step" data-step="5"><b>06 · Fusion</b>96 features</button>
+<button class="step" data-step="6"><b>07 · Classifier</b>Dense head</button>
+<button class="step" data-step="7"><b>08 · Output</b>Probabilities</button>
+</nav>
+<section class="diagram" aria-label="Interactive model flow diagram">
+<div class="diagram-head"><h2>Live model data flow</h2><div class="legend"><span><i class="dot" style="background:var(--mint)"></i>Spectral CNN–ViT branch</span><span><i class="dot" style="background:var(--amber)"></i>Connectivity branch</span><span><i class="dot" style="background:var(--violet)"></i>Fusion</span></div></div>
+<div class="flow">
+<div class="source" id="n0"><strong>Preprocessed EEG window</strong><small>2 seconds · 128 Hz · 19 channels · 256 × 19</small></div>
+<section class="branch" aria-label="Spectral CNN Vision Transformer branch">
+<h3>Branch A · spectral CNN–ViT</h3>
+<button class="node" id="n1" data-step="1"><strong>TensorFlow STFT + log magnitude</strong><small>Frame 128 · step 8 · FFT 128 → [B, 41, 17, 19]</small></button><div class="down">↓</div>
+<button class="node" id="n2" data-step="2"><strong>Three CNN feature stages</strong><small>Factorized (1×7), (7×1), then 3×3 convolutions → [B, 5, 8, 64]</small></button><div class="down">↓</div>
+<button class="node" id="n3" data-step="3"><strong>40 tokens + positional embedding</strong><small>3 pre-norm Transformer blocks · 4 attention heads · 64-dim embedding</small></button><div class="down">↓</div>
+<div class="node" style="cursor:default"><strong>Global average pooling + LayerNorm</strong><small>Spectral representation → [B, 64]</small></div>
+</section>
+<section class="branch conn" aria-label="Functional connectivity branch">
+<h3>Branch B · functional connectivity</h3>
+<button class="node" id="n4" data-step="4"><strong>Pearson correlation matrix</strong><small>19 × 19 matrix from the same cleaned, z-scored window</small></button><div class="down">↓</div>
+<div class="node" style="cursor:default"><strong>Upper-triangle extraction</strong><small>19 × 18 / 2 = 171 unique pairwise values</small></div><div class="down">↓</div>
+<div class="node" style="cursor:default"><strong>Dense(32) + ReLU + BatchNorm</strong><small>Dropout 0.3 → connectivity representation [B, 32]</small></div>
+</section>
+<div class="fusion" id="n5"><strong>Late feature fusion · concatenate</strong><small>64 spectral features + 32 connectivity features = 96-dimensional vector</small></div>
+<div class="down" style="grid-column:1/-1">↓</div>
+<div class="pred" id="n6"><strong>Classifier head</strong><small>Dense(32, GELU) → Dropout(0.5) → Dense(2, Softmax)</small></div>
+<div class="down" style="grid-column:1/-1">↓</div>
+<div class="pred" id="n7"><strong>Two-class probability output</strong><small>Control probability · ADHD probability</small></div>
+</div>
+</section>
+<section class="details" aria-live="polite">
+<div class="detail-card"><div class="eyebrow" id="detail-kicker">STAGE 01 · INPUT</div><h3 id="detail-title">One window, two views</h3><p id="detail-copy">The model starts with a cleaned, channel-wise z-scored EEG segment. This exact window feeds both branches: one learns its spectral-temporal structure, while the other summarizes pairwise channel correlations.</p></div>
+<div class="tensor-card"><div class="label">Tensor / representation at this stage</div><div class="tensor" id="tensor">[B, 256, 19]</div><p id="tensor-note">B is the variable batch dimension. Each example contains 256 time samples across 19 EEG channels.</p></div>
+</section>
+<section class="metrics" aria-label="Model configuration summary">
+<div class="metric"><b>19</b><small>EEG channels</small></div><div class="metric"><b>40 × 64</b><small>ViT tokens × embedding</small></div><div class="metric"><b>171</b><small>Connectivity pairs</small></div><div class="metric"><b>96</b><small>Fused features</small></div>
+</section>
+<p class="foot">Architecture is transcribed from <a href="https://github.com/RITESH2127/ADHD-DETECTION/blob/main/sensitivitytestadhdcode.ipynb">build_paper_hybrid_model()</a> in the main notebook. The connectivity branch is calculated separately from the same cleaned window; it is not an output of the ViT. TensorFlow operation placement (CPU/GPU) depends on the runtime environment.</p>
+</main>
+<script>
+(()=>{
+const root=document.getElementById('architecture-app');if(root.dataset.ready)return;root.dataset.ready='1';
+const stages=[
+{title:'One window, two views',kicker:'STAGE 01 · INPUT',copy:'The model starts with a cleaned, channel-wise z-scored EEG segment. This exact window feeds both branches: one learns its spectral-temporal structure, while the other summarizes pairwise channel correlations.',tensor:'[B, 256, 19]',note:'B is the variable batch dimension. Each example contains 256 time samples across 19 EEG channels.'},
+{title:'Turn the signal into a spectral map',kicker:'STAGE 02 · STFT',copy:'The custom TensorFlow layer transposes the input to channel-first form and computes a short-time Fourier transform. The model keeps 41 frequency bins and 17 time frames, converts magnitude to a log scale, then applies batch normalization.',tensor:'[B, 41, 17, 19]',note:'Frame length 128 · frame step 8 · FFT length 128. The final axis is the 19-channel input depth.'},
+{title:'Learn local time–frequency patterns',kicker:'STAGE 03 · CNN',copy:'The first stage applies a (1×7) convolution across STFT frames and a (7×1) convolution across frequency bins. Two further 3×3 convolution stages progressively form a compact 5×8×64 feature map. Pooling reduces frequency resolution while retaining eight time positions.',tensor:'[B, 5, 8, 64]',note:'CNN stage outputs: [B,20,8,16] → [B,10,8,32] → [B,5,8,64].'},
+{title:'Represent the map as tokens',kicker:'STAGE 04 · VISION TRANSFORMER',copy:'A projection convolution retains the 5×8 grid. Reshaping creates 40 tokens with 64 features each; learned positional embeddings are added. Three pre-normalized Transformer blocks use four-head self-attention, residual paths, LayerScale and a GELU feed-forward network.',tensor:'[B, 40, 64] → [B, 64]',note:'Each block uses 4 attention heads (key_dim=32), LayerScale initialized to 1e−2 and a 64→128→64 feed-forward network. Global average pooling produces the 64-value branch vector.'},
+{title:'Build the connectivity representation',kicker:'STAGE 05 · PEARSON CONNECTIVITY',copy:'In parallel, Pearson correlation is calculated between the 19 channels in the same cleaned, z-scored window. Because the matrix is symmetric, only its 171 unique off-diagonal values are retained. A compact dense encoder maps them to 32 features.',tensor:'[B, 171] → [B, 32]',note:'171 = 19×18÷2 unique channel pairs. Dense(32, ReLU) → BatchNorm → Dropout(0.3). Correlation is statistical association, not proof of causality.'},
+{title:'Fuse the two learned views',kicker:'STAGE 06 · LATE FUSION',copy:'Only after each branch has learned its own representation are the vectors concatenated. This allows the classifier to use both the spectral-temporal information and the channel-pair relationship features.',tensor:'64 + 32 = 96',note:'The 64-dimensional ViT representation and 32-dimensional connectivity representation form one 96-dimensional fused vector.'},
+{title:'Map fused features to class scores',kicker:'STAGE 07 · CLASSIFIER',copy:'The fused representation passes through a 32-unit dense layer with GELU activation, followed by dropout. A final two-unit dense layer and softmax convert the learned scores into normalized class probabilities.',tensor:'[B, 96] → [B, 2]',note:'Dense(32, GELU) → Dropout(0.5) → Dense(2, Softmax). The configured training objective is focal loss (gamma 2.0); AdamW is the optimizer.'},
+{title:'Produce the two-class output',kicker:'STAGE 08 · OUTPUT',copy:'For each EEG window, the network returns two probabilities: Control and ADHD. These are model outputs for research evaluation, not a diagnosis. Participant-level evaluation aggregates window probabilities across each participant.',tensor:'[P(Control), P(ADHD)]',note:'Softmax probabilities sum to 1 for each window. The repository reports window-level and participant-level metrics; the participant test cohort is small.'}
+];
+let current=0,timer=null;
+const $=id=>root.querySelector('#'+id);
+function show(i){current=Math.max(0,Math.min(stages.length-1,i));const s=stages[current];$('detail-kicker').textContent=s.kicker;$('detail-title').textContent=s.title;$('detail-copy').textContent=s.copy;$('tensor').textContent=s.tensor;$('tensor-note').textContent=s.note;$('status').textContent='Stage '+(current+1)+' of 8 · '+s.kicker.split(' · ')[1];$('bar').style.width=((current+1)/8*100)+'%';root.querySelectorAll('.step').forEach((b,j)=>{if(j===current)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current')});root.querySelectorAll('.node').forEach(n=>n.classList.remove('active','pulse'));const node=$('n'+current);if(node){node.classList.add('active');if(current!==0)node.classList.add('pulse')}$('prev').disabled=current===0;$('next').disabled=current===7;}
+function stop(){if(timer){clearInterval(timer);timer=null}$('play').textContent='▶ Run walkthrough'}
+$('prev').addEventListener('click',()=>{stop();show(current-1)});$('next').addEventListener('click',()=>{stop();show(current+1)});
+root.querySelectorAll('.step').forEach(b=>b.addEventListener('click',()=>{stop();show(Number(b.dataset.step))}));
+root.querySelectorAll('.node[data-step]').forEach(b=>b.addEventListener('click',()=>{stop();show(Number(b.dataset.step))}));
+$('play').addEventListener('click',()=>{if(timer){stop();return}if(current===7)show(0);$('play').textContent='Ⅱ Pause walkthrough';timer=setInterval(()=>{if(current>=7){stop();return}show(current+1)},2600)});
+const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(reduced)$('play').title='Motion is minimized by your system preference; use Next stage to explore.';
+show(0);
+})();
+</script>
+</body>
+</html>
