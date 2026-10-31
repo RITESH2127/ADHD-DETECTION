@@ -180,7 +180,7 @@ The implemented subject-specific z-score procedure uses statistics derived from 
 
 **Explore the model, don't just read the diagram.** The interactive architecture explorer walks through the complete forward pass, highlights the active stage, shows the tensor shape at each step, and explains how the spectral CNN–ViT and Pearson-connectivity branches merge into the classifier. Use **Run walkthrough**, **Next stage**, or select any stage to inspect it.
 
-> GitHub sanitizes executable JavaScript in README files, so an interactive experience cannot run directly inside the Markdown page. The explorer is therefore published as a small GitHub Pages site, while the Mermaid diagram below remains available as an in-README architecture overview and no-JavaScript fallback.
+> GitHub sanitizes executable JavaScript in README files, so an interactive experience cannot run directly inside the Markdown page. The repository now includes a standalone explorer and a GitHub Actions deployment workflow. **One-time activation is still required:** open **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions**, then rerun the `Deploy interactive architecture explorer` workflow from the Actions tab. Once deployment succeeds, the live link above will open the interactive site. Until then, use the HTML source link or the Mermaid diagram below.
 
 
 The main experiment is a **two-input, dual-branch network with late feature fusion**. Both inputs are derived from the same cleaned 2-second EEG window, but they describe it in different ways:
