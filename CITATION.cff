@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it and identify the exact dataset, code revision, and experiment configuration used."
+title: "ADHD Detection: EEG Hybrid CNN–Vision Transformer Research"
+type: software
+authors:
+  - family-names: Kumar
+    given-names: Ritesh
+repository-code: "https://github.com/RITESH2127/ADHD-DETECTION"
+license: MIT
+version: "1.0.0"
+date-released: "2026-10-31"
+keywords:
+  - electroencephalography
+  - EEG
+  - ADHD
+  - deep learning
+  - Vision Transformer
+  - functional connectivity
+abstract: "An experimental EEG classification research repository exploring a hybrid convolutional neural network and Vision Transformer with a parallel channel-correlation representation."
