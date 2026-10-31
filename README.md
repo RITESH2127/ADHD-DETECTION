@@ -346,7 +346,7 @@ Grad-CAM highlights regions that influence a particular model output. It does no
 | [sensitivitytestadhdcode.ipynb](sensitivitytestadhdcode.ipynb) | Main EEG hybrid CNN–ViT experiment, sensitivity sweep and detailed evaluation |
 | [ADHD_MINI_PROJECT.ipynb](ADHD_MINI_PROJECT.ipynb) | Earlier EEG preprocessing and ViT prototype |
 | [Copy_of_ADHD_MINI_PROJECT.ipynb](Copy_of_ADHD_MINI_PROJECT.ipynb) | Separate exploratory EEG–MRI/PyTorch fusion prototype |
-| [adhd paper notebook.ipynb](%20adhd%20paper%20notebook.ipynb) | Additional research notebook |
+| [adhd paper notebook.ipynb](adhd%20paper%20notebook.ipynb) | Additional research notebook |
 | [notebook18c25b8789 (1).ipynb](notebook18c25b8789%20%281%29.ipynb) | Additional archived notebook experiment |
 | [methodology notes.md](methodology%20notes.md) | Detailed preprocessing, modelling and evaluation decisions |
 | [pipeline.md](pipeline.md) | Pipeline overview; contains some historical settings |
