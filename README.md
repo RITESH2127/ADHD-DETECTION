@@ -141,7 +141,8 @@ The main notebook configures 19 EEG channels, a sampling frequency of 128 Hz and
 |---|---|
 | Input | Subject-level MATLAB .mat recordings |
 | Channels | 19 EEG channels; standard 10–20 montage |
-| Final channel order | Fz, Cz, Pz, C3, T7, C4, T8, Fp1, Fp2, F3, F4, F7, F8, P3, P4, P7, P8, O1, O2 |\n| Legacy channel labels | T3→T7, T4→T8, T5→P7, T6→P8 |
+| Final channel order | Fz, Cz, Pz, C3, T7, C4, T8, Fp1, Fp2, F3, F4, F7, F8, P3, P4, P7, P8, O1, O2 |
+| Legacy channel labels | T3→T7, T4→T8, T5→P7, T6→P8 |
 | Voltage scaling | Multiply by 1e-7 |
 | Bad-channel handling | Low-variance/flatline detection and interpolation |
 | Band-pass filter | FIR, 1–40 Hz |
@@ -256,7 +257,7 @@ The correlation matrix is symmetric. Removing its diagonal and duplicate lower-t
 
 ### 3. Branch 2 — functional connectivity
 
-1. Compute the Pearson correlation matrix across the 19 channels for the same cleaned EEG window.
+1. Compute the Pearson correlation matrix across the 19 channels for the same cleaned, z-scored EEG window.
 2. Extract the 171 unique off-diagonal channel-pair values.
 3. Pass the vector through a 32-unit ReLU dense layer, batch normalization and dropout of 0.3.
 4. The branch produces a **32-dimensional connectivity feature vector**.
