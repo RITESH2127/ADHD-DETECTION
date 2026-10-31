@@ -24,7 +24,9 @@
   <a href="#-how-the-model-works">Architecture</a> ·
   <a href="#-visual-research-gallery">Gallery</a> ·
   <a href="#-reproduce-the-experiments">Reproduce</a> ·
-  <a href="#-limitations--research-integrity">Limitations</a>
+  <a href="#-limitations--research-integrity">Limitations</a> ·
+  <a href="MODEL_CARD.md">Model card</a> ·
+  <a href="DATASET_CARD.md">Dataset card</a>
 </p>
 
 ---
@@ -466,9 +468,20 @@ This project has meaningful engineering and research components, but its current
 | Experiment environment | Jupyter Notebook; Kaggle-mounted dataset paths |
 | Additional prototypes | PyTorch, nibabel and Grad-CAM-related tooling in the separate multimodal notebook |
 
+## 🧾 Research documentation
+
+The repository now includes dedicated documentation files so that important research context is not buried in the README:
+
+- **[Model Card](MODEL_CARD.md):** intended use, prohibited use, model inputs/outputs, reported performance and limitations.
+- **[Dataset Card](DATASET_CARD.md):** what is known about the input data, what still needs verification, and safe data-handling expectations.
+- **[Contributing Guide](CONTRIBUTING.md):** expectations for code changes, experiment reporting and research integrity.
+- **[CITATION.cff](CITATION.cff):** machine-readable citation metadata for GitHub's citation interface and reference managers.
+
+These documents deliberately distinguish facts visible in the repository from dataset details that must be verified at the original source.
+
 ## 📖 Citation
 
-If you use or extend this work, cite the repository and report the exact dataset, preprocessing, participant split, model configuration and evaluation protocol used.
+If you use or extend this work, cite the repository using the metadata in [CITATION.cff](CITATION.cff) and report the exact dataset, preprocessing, participant split, model configuration and evaluation protocol used.
 
     @software{kumar_adhd_eeg_hybrid,
       author  = {Ritesh Kumar},
