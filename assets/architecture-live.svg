@@ -76,7 +76,7 @@
 <!-- spectral branch -->
 <rect x="48" y="294" width="970" height="438" rx="18" fill="#0b2638" stroke="#155e75" stroke-width="1.5"/>
 <rect x="70" y="313" width="36" height="25" rx="7" fill="#0e7490"/><text x="88" y="330" class="num" text-anchor="middle">01</text>
-<text x="119" y="331" class="eyebrow" fill="#67e8f9">SPECTRAL BRANCH · WHAT FREQUENCY PATTERNS OCCUR, AND WHEN?</text>
+<text x="119" y="331" class="eyebrow" fill="#67e8f9">SPECTRAL CNN + VISION TRANSFORMER</text>
 <text x="75" y="360" class="muted">STFT → local CNN features → 40 learned tokens → Transformer context.</text>
 
 <!-- spectral stage 1 -->
@@ -154,7 +154,7 @@
 <!-- connectivity -->
 <rect x="1040" y="294" width="512" height="438" rx="18" fill="#2a2115" stroke="#92400e" stroke-width="1.5"/>
 <rect x="1062" y="313" width="36" height="25" rx="7" fill="#b45309"/><text x="1080" y="330" class="num" text-anchor="middle">02</text>
-<text x="1111" y="331" class="eyebrow" fill="#fcd34d">CONNECTIVITY BRANCH · HOW DO CHANNELS VARY TOGETHER?</text>
+<text x="1111" y="331" class="eyebrow" fill="#fcd34d">CONNECTIVITY BRANCH</text>
 <text x="1066" y="360" class="muted">Channel-pair relationships form an independent second input.</text>
 <path d="M1290 305 V375 H1173 V390" class="wireC"/><path d="M1290 305 V375 H1173 V390" class="flowAmber"/>
 <rect x="1066" y="390" width="214" height="264" rx="12" class="connCard"/>
