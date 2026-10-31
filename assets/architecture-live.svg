@@ -155,7 +155,7 @@
 <rect x="1040" y="294" width="512" height="438" rx="18" fill="#2a2115" stroke="#92400e" stroke-width="1.5"/>
 <rect x="1062" y="313" width="36" height="25" rx="7" fill="#b45309"/><text x="1080" y="330" class="num" text-anchor="middle">02</text>
 <text x="1111" y="331" class="eyebrow" fill="#fcd34d">CONNECTIVITY BRANCH</text>
-<text x="1066" y="360" class="muted">Channel-pair relationships form an independent second input.</text>
+<text x="1066" y="360" class="muted">Independent channel-pair feature input.</text>
 <path d="M1290 305 V375 H1173 V390" class="wireC"/><path d="M1290 305 V375 H1173 V390" class="flowAmber"/>
 <rect x="1066" y="390" width="214" height="264" rx="12" class="connCard"/>
 <text x="1084" y="418" class="tag" fill="#fcd34d">1 · RELATIONSHIP MATRIX</text>
