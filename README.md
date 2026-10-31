@@ -173,6 +173,16 @@ The implemented subject-specific z-score procedure uses statistics derived from 
 
 ## 🧠 Model architecture
 
+<p align="center">
+  <a href="https://rites2127.github.io/ADHD-DETECTION/"><img src="https://img.shields.io/badge/OPEN-INTERACTIVE%20ARCHITECTURE-0E7490?style=for-the-badge&logo=github&logoColor=white" alt="Open interactive model architecture"/></a>
+  <a href="architecture/index.html"><img src="https://img.shields.io/badge/VIEW-HTML%20SOURCE-334155?style=for-the-badge&logo=html5&logoColor=white" alt="View interactive architecture source"/></a>
+</p>
+
+**Explore the model, don't just read the diagram.** The interactive architecture explorer walks through the complete forward pass, highlights the active stage, shows the tensor shape at each step, and explains how the spectral CNN–ViT and Pearson-connectivity branches merge into the classifier. Use **Run walkthrough**, **Next stage**, or select any stage to inspect it.
+
+> GitHub sanitizes executable JavaScript in README files, so an interactive experience cannot run directly inside the Markdown page. The explorer is therefore published as a small GitHub Pages site, while the Mermaid diagram below remains available as an in-README architecture overview and no-JavaScript fallback.
+
+
 The main experiment is a **two-input, dual-branch network with late feature fusion**. Both inputs are derived from the same cleaned 2-second EEG window, but they describe it in different ways:
 
 - The **spectral branch** receives the preprocessed, channel-wise z-scored EEG window and learns time–frequency patterns with a CNN followed by a Vision Transformer.
