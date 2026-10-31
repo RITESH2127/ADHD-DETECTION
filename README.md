@@ -67,7 +67,7 @@ EEG is a multichannel time series. The same recording can be examined from sever
 | View | Representation | What the model can learn |
 |---|---|---|
 | Time–frequency | STFT magnitude features | How spectral energy changes over time and frequency |
-| Local patterns | CNN feature maps | Local structure across spectral bins, frames and channels |
+| Local patterns | CNN feature maps | Local time–frequency patterns and learned mixtures of EEG-channel inputs |
 | Long-range relationships | Transformer self-attention | Interactions between learned spectrogram tokens |
 | Channel relationships | Pearson correlation vector | Statistical coupling between pairs of EEG channels |
 | Combined representation | Late fusion | Complementary information from spectral and connectivity branches |
@@ -102,7 +102,7 @@ The values below are transcribed from **[final_evaluation_metrics_base.txt](fina
 
 ### Read the participant-level result responsibly
 
-The participant-level prediction is produced by averaging a participant's window probabilities before classification. The held-out participant cohort contains only **18 people**. A perfect point estimate on this small cohort is statistically fragile and does not establish generalization to new populations, hospitals, EEG systems or acquisition protocols. The confidence interval, cohort size, split design and repeated experimentation all matter when interpreting the result.
+The participant-level prediction is produced by averaging a participant's window probabilities before classification. The held-out participant cohort contains only **18 people**. In this run, the participant-level bootstrap interval is degenerate at 1.0000 because every resampled cohort that contains both classes retains perfect separation; it should not be read as evidence of negligible uncertainty. A perfect point estimate on 18 people is statistically fragile and does not establish generalization to new populations, hospitals, EEG systems or acquisition protocols.
 
 ### Saved experiment reports
 
@@ -191,7 +191,7 @@ flowchart TB
 
     subgraph SPECTRAL["BRANCH 1 — SPECTRAL CNN + VISION TRANSFORMER"]
         direction TB
-        RAW --> STFT["GPU STFT + log-magnitude<br/>[B, 41, 17, 19]"]
+        RAW --> STFT["TensorFlow STFT + log-magnitude<br/>[B, 41, 17, 19]"]
         STFT --> BN0["Batch normalization"]
         BN0 --> CNN1["CNN stage 1<br/>factorized convolutions · 16 filters<br/>pooling → [B, 20, 8, 16]"]
         CNN1 --> CNN2["CNN stage 2<br/>3 × 3 convolution · 32 filters<br/>frequency pooling → [B, 10, 8, 32]"]
@@ -251,7 +251,7 @@ The correlation matrix is symmetric. Removing its diagonal and duplicate lower-t
 2. **CNN feature extraction:** three convolutional stages learn local patterns. The first uses factorized temporal/spatial convolutions; the following stages use 3 × 3 convolutions. Pooling reduces the frequency dimension while retaining the eight-frame temporal dimension.
 3. **Feature grid:** the final convolutional map is `[B, 5, 8, 64]`. A projection convolution retains the 5 × 8 grid, which is reshaped into **40 tokens, each with 64 features**.
 4. **Position information:** learned positional embeddings are added to the token sequence so the Transformer can distinguish token positions.
-5. **Transformer encoding:** three encoder blocks use four-head self-attention, LayerNorm, residual connections, LayerScale and a GELU feed-forward subnetwork.
+5. **Transformer encoding:** three pre-normalized encoder blocks use four-head self-attention (`key_dim=32`), LayerNorm, residual connections, LayerScale (initial scale `1e-2`) and a GELU feed-forward network (`64 → 128 → 64`). The configured Transformer dropout is `0.4`.
 6. **Branch output:** global average pooling over the token sequence, followed by LayerNorm, produces a **64-dimensional spectral feature vector**.
 
 ### 3. Branch 2 — functional connectivity
@@ -283,7 +283,7 @@ The main notebook trains the network with categorical focal loss (configured wit
 | STFT representation | Frame 128 · step 8 · FFT 128 | 41 × 17 × 19 |
 | CNN feature map | Three convolutional stages | 5 × 8 × 64 |
 | Token sequence | 5 × 8 positions, embedding size 64 | 40 × 64 |
-| Transformer | 3 blocks · 4 attention heads | 40 × 64 |
+| Transformer | 3 pre-norm blocks · 4 heads · dropout 0.4 · FFN 64→128→64 | 40 × 64 |
 | Spectral branch pooling | Global average pooling + LayerNorm | 64 |
 | Connectivity input | 171 unique Pearson correlations | 171 |
 | Connectivity encoder | Dense(32) + BN + Dropout(0.3) | 32 |
@@ -407,7 +407,7 @@ Grad-CAM highlights regions that influence a particular model output. It does no
 | [adhd_ablations_new.xlsx](adhd_ablations_new.xlsx) | Experiment/ablation workbook |
 | [final_evaluation_metrics_base.txt](final_evaluation_metrics_base.txt) | Baseline evaluation report |
 | [final_evaluation_metrics_ablation1.txt](final_evaluation_metrics_ablation1.txt) – [ablation6](final_evaluation_metrics_ablation6.txt) | Additional saved evaluation reports |
-| [requirements.txt](requirements.txt) | Minimal declared Python application dependencies |
+| [requirements.txt](requirements.txt) | Partial dependency list; not a complete environment for the main research notebook |
 | [LICENSE](LICENSE) | MIT License |
 
 The root also contains the committed figures shown in the gallery and launcher-related files. Notebooks represent different stages of development; do not assume they share the same dataset, framework, preprocessing or model.
@@ -421,7 +421,7 @@ The root also contains the committed figures shown in the gallery and launcher-r
 
 ### 2. Create the Python environment
 
-The repository's .python-version file specifies **Python 3.10.13**.
+The repository's `.python-version` file specifies **Python 3.10.13**. However, the committed main notebook's kernel metadata records **Python 3.12.13**. This is a real environment mismatch: neither file is a tested, fully locked environment specification, so validate package compatibility before running the notebook.
 
 **Windows PowerShell**
 
@@ -437,11 +437,11 @@ The repository's .python-version file specifies **Python 3.10.13**.
 
 ### 3. Install research dependencies
 
-The committed requirements.txt is a short dependency list and is **not a complete, version-locked environment for the main research notebook**. The main notebook imports additional packages.
+The committed `requirements.txt` lists a partial set of packages (including Streamlit, TensorFlow CPU, NumPy and image-processing libraries), but it omits several dependencies imported by the main research notebook. It is **not a complete, version-locked environment** for reproducing the experiment.
 
 A starting installation for the documented EEG notebook is:
 
-    pip install tensorflow-cpu numpy scipy pandas scikit-learn mne mne-icalabel matplotlib seaborn tqdm
+    pip install tensorflow-cpu numpy scipy pandas scikit-learn mne mne-icalabel matplotlib seaborn tqdm PyWavelets
 
 For GPU execution, install a TensorFlow build compatible with your operating system, Python version, accelerator and driver stack. GPU support is environment-specific; the notebook's use of TensorFlow operations does not guarantee that a compatible GPU is available.
 
