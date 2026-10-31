@@ -1,0 +1,84 @@
+================================================================================
+               CLINICAL VALIDATION AND STATISTICAL RIGOR REPORT                
+================================================================================
+
+--------------------------------------------------------------------------------
+1. WINDOW-LEVEL PERFORMANCE (Independent 2.0s Windows, 0% Test Overlap)
+--------------------------------------------------------------------------------
+Sample Volume:               1000 Windows (Control: 470, ADHD: 530)
+AUROC:                       0.9261 (95% Cluster CI: 0.8506 - 0.9792)
+Brier Calibration Score:     0.1840
+Decision Threshold:          0.5000 (Invariant Class Parity)
+
+Accuracy:                    0.8530 (85.30%)
+Balanced Accuracy:           0.8535 (85.35%)
+Sensitivity / Recall (ADHD): 0.8453 (84.53%)
+Specificity (Control):       0.8617 (86.17%)
+Positive Predictive Value:   0.8733 (87.33%)
+Negative Predictive Value:   0.8316 (83.16%)
+Harmonic F1-Score:           0.8591
+Matthews Correlation (MCC):  0.7060
+Cohen's Kappa (κ):           0.7055
+
+Confusion Matrix (TN, FP, FN, TP):
+  TN: 405   | FP: 65   
+  FN: 82    | TP: 448  
+
+Classification Report (Window-Level):
+              precision    recall  f1-score   support
+
+     Control     0.8316    0.8617    0.8464       470
+        ADHD     0.8733    0.8453    0.8591       530
+
+    accuracy                         0.8530      1000
+   macro avg     0.8525    0.8535    0.8527      1000
+weighted avg     0.8537    0.8530    0.8531      1000
+
+
+--------------------------------------------------------------------------------
+2. PATIENT-LEVEL PERFORMANCE (Macro Soft-Voting over Patient Windows)
+--------------------------------------------------------------------------------
+Cohort Size:                 18 Patients (Control: 9, ADHD: 9)
+Mean Windows per Patient:    55.6 ± 14.5
+AUROC:                       1.0000 (95% Cluster CI: 1.0000 - 1.0000)
+Brier Calibration Score:     0.1800
+
+--- A. DEFAULT UNBIASED DIAGNOSTIC REGIME (Threshold = 0.5000) ---
+Accuracy:                    1.0000 (100.00%)
+Balanced Accuracy:           1.0000 (100.00%)
+Sensitivity / Recall (ADHD): 1.0000 (100.00%)
+Specificity (Control):       1.0000 (100.00%)
+Positive Predictive Value:   1.0000 (100.00%)
+Negative Predictive Value:   1.0000 (100.00%)
+Harmonic F1-Score:           1.0000
+Matthews Correlation (MCC):  1.0000
+Cohen's Kappa (κ):           1.0000
+
+Patient Confusion Matrix (T=0.5000):
+  TN: 9     | FP: 0    
+  FN: 0     | TP: 9    
+
+Classification Report (Patient-Level, T=0.5000):
+              precision    recall  f1-score   support
+
+     Control     1.0000    1.0000    1.0000         9
+        ADHD     1.0000    1.0000    1.0000         9
+
+    accuracy                         1.0000        18
+   macro avg     1.0000    1.0000    1.0000        18
+weighted avg     1.0000    1.0000    1.0000        18
+
+
+--- B. CLINICAL HIGH-SENSITIVITY TRIAGE REGIME (Post-Hoc ROC Operating Point) ---
+Operational Threshold:       0.5011 (Triage Sensitivity Target >= 90.0%)
+Triage Sensitivity (ADHD):   1.0000 (100.00%)
+Triage Specificity (Control):1.0000 (100.00%)
+Triage PPV (Precision):      1.0000 (100.00%)
+Triage NPV:                  1.0000 (100.00%)
+Triage F1-Score:             1.0000
+
+Patient Confusion Matrix (Triage T=0.5011):
+  TN: 9     | FP: 0    
+  FN: 0     | TP: 9    
+
+================================================================================
