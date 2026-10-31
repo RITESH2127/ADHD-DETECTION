@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="https://github.com/RITESH2127/ADHD-DETECTION"><img src="https://img.shields.io/badge/Project-Research%20Prototype-7057ff?style=for-the-badge" alt="Research prototype"/></a>
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10.13-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10.13"/></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-Version%20needs%20validation-orange?style=for-the-badge&logo=python&logoColor=white" alt="Python version needs validation: project pin 3.10.13, notebook metadata 3.12.13"/></a>
   <a href="https://www.tensorflow.org/"><img src="https://img.shields.io/badge/TensorFlow-Keras-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="TensorFlow Keras"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-2E7D32?style=for-the-badge" alt="MIT License"/></a>
   <a href="https://github.com/RITESH2127/ADHD-DETECTION/commits/main"><img src="https://img.shields.io/github/last-commit/RITESH2127/ADHD-DETECTION?style=for-the-badge" alt="Latest commit"/></a>
@@ -509,7 +509,7 @@ This project has meaningful engineering and research components, but its current
 
 | Layer | Tools |
 |---|---|
-| Language | Python 3.10.13 |
+| Language | `.python-version`: 3.10.13; main notebook metadata: 3.12.13 (environment compatibility not verified) |
 | Deep learning | TensorFlow / Keras |
 | EEG processing | MNE, mne-icalabel, SciPy |
 | Data and numerical work | NumPy, pandas |
